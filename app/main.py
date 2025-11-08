@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -41,7 +42,7 @@ def test_database_connection(db: Session = Depends(get_db)):
     """Test database connection"""
     try:
         # Execute a simple query to test connection
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {
             "status": "success",
             "message": "Database connection successful",
