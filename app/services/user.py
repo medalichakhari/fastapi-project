@@ -74,12 +74,32 @@ class UserService:
         Returns:
             Updated user object or None if not found
         """
+        from fastapi import HTTPException, status
+
         db_user = UserService.get_by_id(db, user_id)
         if not db_user:
             return None
 
         # Update fields that are provided
         update_data = user_in.model_dump(exclude_unset=True)
+
+        # Check for duplicate email (if email is being updated)
+        if "email" in update_data and update_data["email"] != db_user.email:
+            existing_user = UserService.get_by_email(db, update_data["email"])
+            if existing_user:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered",
+                )
+
+        # Check for duplicate username (if username is being updated)
+        if "username" in update_data and update_data["username"] != db_user.username:
+            existing_user = UserService.get_by_username(db, update_data["username"])
+            if existing_user:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username already taken",
+                )
 
         # Hash password if provided
         if "password" in update_data:
