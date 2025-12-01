@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 # Import routers
 from app.api.auth import router as auth_router
+from app.api.me import router as me_router
 from app.api.users import router as users_router
 from app.core.config import settings
 from app.core.database import get_db
@@ -25,6 +26,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
+app.include_router(me_router, prefix=settings.API_V1_PREFIX)
 app.include_router(users_router, prefix=settings.API_V1_PREFIX)
 
 

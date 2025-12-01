@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_active_superuser
 from app.schemas.user import User, UserCreate, UserUpdate
 from app.services.user import UserService
 
@@ -39,9 +40,16 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[User])
-def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_active_superuser),
+):
     """
     Get all users with pagination.
+
+    **Admin only endpoint.**
 
     - **skip**: Number of records to skip (default: 0)
     - **limit**: Maximum number of records to return (default: 100)
@@ -81,9 +89,15 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_active_superuser),
+):
     """
     Delete a user.
+
+    **Admin only endpoint.**
     """
     success = UserService.delete(db, user_id)
     if not success:
